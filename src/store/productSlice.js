@@ -4,40 +4,53 @@ import axios from "axios";
 export const fetchProducts = createAsyncThunk(
   "products/fetchProduct",
   async () => {
-    const response = await axios.get("https://dummyjson.com/products");
-    return response.data["products"];
+    try {
+      // setTimeout(async () => {
+      const response = await axios.get("https://dummyjson.com/products");
+      return response.data["products"];
+      // }, 3000);
+    } catch (error) {
+      return error.message;
+    }
   }
 );
 
 const productSlice = createSlice({
   name: "products",
-  initialState: [],
-  //   loading: false,
+  initialState: {
+    productList: [],
+    isLoading: false,
+    error: "",
+  },
   reducers: {
     setProducts: (state, action) => {
-      // setProduct([])
-      return action.payload;
+      state.productList = action.payload;
     },
     deleteProduct: (state, action) => {
-      // deleteProduct(id)
-      return state.filter((product) => product.id !== action.payload);
+      state.productList = state.productList.filter(
+        (product) => product.id !== action.payload
+      );
     },
   },
   // pending , fullfilled, rejected
   extraReducers: {
     [fetchProducts.fulfilled]: (state, action) => {
-      //   state.loading = false;
-      return action.payload;
+      state.isLoading = false;
+      state.error = "";
+      state.productList = action.payload;
     },
-    // [fetchProducts.pending]: (state, action) => {
-    //   state.loading = true;
-    // },
-    // [fetchProducts.rejected]: (state, action) => {
-    //   state.loading = false;
-    //   state.error = action.paylod;
-    // },
+    [fetchProducts.pending]: (state, action) => {
+      state.isLoading = true;
+      state.productList = [];
+      state.error = "";
+    },
+    [fetchProducts.rejected]: (state, action) => {
+      state.isLoading = false;
+      state.productList = [];
+      state.error = action.payload;
+    },
   },
 });
 
-export const { setProducts } = productSlice.actions;
+export const { setProducts, deleteProduct } = productSlice.actions;
 export default productSlice.reducer;

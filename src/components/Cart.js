@@ -1,11 +1,26 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { removeFromCart } from "../store/cartSlice";
+import {
+  decQuantity,
+  incQuantity,
+  removeFromCart,
+  clearCart,
+} from "../store/cartSlice";
+import { addToOrder } from "../store/orderSlice";
 
 const Cart = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cartItems);
-  const total = cartItems.reduce((total, item) => total + item.price, 0);
+  const total = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
+  function handleOrder(item) {
+    console.log("handleOrder");
+    dispatch(addToOrder(item));
+    dispatch(clearCart());
+  }
 
   return (
     <div className="p-4 border">
@@ -21,7 +36,13 @@ const Cart = () => {
                 {item.price.toFixed(2)}
               </div>
               <div className="flex items-center justify-between">
-                <span className="">Qty - 1</span>
+                <button onClick={() => dispatch(decQuantity(item.id))}>
+                  -
+                </button>
+                <span className="">Qty - {`${item.quantity}`}</span>
+                <button onClick={() => dispatch(incQuantity(item.id))}>
+                  +
+                </button>
                 <button
                   className="text-red-500 hover:text-red-700"
                   onClick={() => dispatch(removeFromCart(item.id))}
@@ -37,6 +58,14 @@ const Cart = () => {
               <span>${total.toFixed(2)}</span>
             </div>
           </li>
+          <button
+            className="text-red-500 hover:text-red-700"
+            onClick={() => {
+              handleOrder(cartItems);
+            }}
+          >
+            Order
+          </button>
         </ul>
       )}
     </div>
